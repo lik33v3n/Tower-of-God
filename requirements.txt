@@ -1,0 +1,6 @@
+aiogram~=2.9.2
+gino~=1.0.1
+SQLAlchemy~=1.3.17
+python-dateutil~=2.8.1
+alembic~=1.4.2
+setuptools~=47.2.0
