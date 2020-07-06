@@ -10,8 +10,9 @@ from aiogram.utils.exceptions import CantParseEntities, MessageNotModified, Mess
 from ..database.db import db
 from ..database.user import User
 from ..handlers.user_handlers import user_profile
-from ..helpers.keyboards import ADMIN_GET_Kb, FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
+from ..helpers.keyboards import FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
 from ..helpers.scenario import func_description, greetings, help_text
+from ..utils.states import AdminStates
 
 
 async def cmd_start(m: Message, user: User):
@@ -57,17 +58,17 @@ async def admin_commands(m: Message):
             except (ValueError, CantParseEntities) as err:
                 await m.reply(f'<b>{err.__class__.__name__}</b> - Введи правильное число строк!')
     elif '!get' in m.text: 
-        # try:
-        #     lst = m.text.split(' ')
-        #     lst[2] = lst[2].replace('_', ' ')
-        #     result, check = await mysql.read(f"SELECT * FROM users WHERE {lst[1]} LIKE '{lst[2]}%'")
-        #     if check != 0:
-        #         await m.reply(f'❕ Все совпадения \"{lst[1]} LIKE {lst[2]}%\"', reply_markup=ADMIN_GET_Kb(result))
-        #     else:
-        #         await m.reply('❗ Ничего не найдено')
-        # except Exception as err:
-        #     await m.reply(err.__class__.__name__)
-        pass
+        if len(m.text) > 4:
+            lst = m.text.split(' ')
+            result = await User.get(int(lst[1]))
+            if result:
+                await user_profile(m, result, False)
+            else:
+                await m.reply('❗ Ничего не найдено')
+        elif m.text == '!get':
+            await AdminStates.getuser.set()
+            await m.reply("Перешли любое сообщение от юзера.")
+
     elif '!deluser' in m.text:
         # try:
         #     lst = m.text.split(' ')
@@ -79,14 +80,18 @@ async def admin_commands(m: Message):
         pass
 
 
-async def admin_get_query(c: CallbackQuery):
-    gotcha = await User.get(c.data[4:])
-    if gotcha:
-        with suppress(MessageToDeleteNotFound):
-            await c.message.delete()
-        await user_profile(c.message, gotcha, False)
-    else:
-        await c.answer(text="<b>Error:</b> Игрока с таким ид не существует | Свяжитесь с администрацией")
+async def admin_get_handler(m: Message, state: FSMContext):
+    try:
+        if m.forward_from:
+            result = await User.get(m.forward_from)
+            if result:
+                await user_profile(m, result, False)
+            else:
+                await m.reply('❗ Юзер не зарегистрирован.')
+        else:
+             await m.reply('❗ ПЕРЕШЛИ СООБЩЕНИЕ')
+    finally:
+        await state.reset_state()
 
 
 async def IDLE(m: Message, user: dict):

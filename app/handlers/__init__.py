@@ -5,8 +5,8 @@ from aiogram.dispatcher.filters import CommandHelp, CommandStart
 from aiogram.dispatcher.filters.builtin import Command, IDFilter
 
 from ..utils.game_logic import ADMIN_COMMANDS, AVAILABLE_COMMANDS
-from ..utils.states import MainStates
-from .base_handlers import (IDLE, admin_commands, admin_get_query, back,
+from ..utils.states import MainStates, AdminStates
+from .base_handlers import (IDLE, admin_commands, admin_get_handler, back,
                             cmd_start, help_func, help_query)
 from .battle_handlers import (pve_attack, pve_battle, pve_confirmed,
                               pve_defence, pve_leave_battle, pve_rankup)
@@ -24,7 +24,7 @@ def setup(dp: Dispatcher):
     dp.register_message_handler(help_func, lambda m: m.text and m.text == '🔈 Помощь')
     dp.register_callback_query_handler(help_query, lambda c: True and c.data[:5] == "help_")
     dp.register_message_handler(admin_commands, IDFilter(user_id=397247994), Command(commands=ADMIN_COMMANDS, prefixes='!'), state='*')
-    dp.register_callback_query_handler(admin_get_query, lambda c: True and c.data[:4] == 'get_', state='*')
+    dp.register_message_handler(admin_get_handler, IDFilter(user_id=397247994), state=AdminStates.getuser)
     dp.register_message_handler(IDLE, lambda m: m.text and not m.text.startswith('!') and m.text not in AVAILABLE_COMMANDS)
     dp.register_callback_query_handler(back, lambda c: True and c.data == 'back', state='*')
     # Base handlers. ^^^

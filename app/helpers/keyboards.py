@@ -150,9 +150,9 @@ def FUNC_LIST_Kb():
     return kb
 
 
-def ADMIN_GET_Kb(matches):
-    kb = types.InlineKeyboardMarkup(row_width=1)
-    for i in range(len(matches)):
-        kb.insert(
-            types.InlineKeyboardButton(text=matches[i].username, callback_data=f"get_{matches[i].telegram_id}"))
-    return kb
+# def ADMIN_GET_Kb(matches):
+#     kb = types.InlineKeyboardMarkup(row_width=1)
+#     for i in range(len(matches)):
+#         kb.insert(
+#             types.InlineKeyboardButton(text=matches[i].username, callback_data=f"get_{matches[i].telegram_id}"))
+#     return kb
