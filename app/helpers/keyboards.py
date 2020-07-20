@@ -84,7 +84,7 @@ def EQUIP_Kb(item_id):
 
 
 def UNDRESS_Kb(data):
-    kb = types.InlineKeyboardMarkup(row_width=2)
+    kb = types.InlineKeyboardMarkup(row_width=1)
     btn1 = types.InlineKeyboardButton(text=f"{data[0]}", callback_data=f'unequip_{data[1]}')
     btn2 = types.InlineKeyboardButton(text=f"{data[2]}", callback_data=f'unequip_{data[3]}')
     btn3 = types.InlineKeyboardButton(text="🔙 Назад", callback_data='back')

@@ -47,7 +47,7 @@ async def user_inventory(m: Message, user: User):
 
 
 async def user_inventory_items(c: CallbackQuery):
-    gear = await Item.get(c.data[4:])
+    gear = await Item.get(int(c.data[4:]))
     if gear:
         await c.message.edit_text(text=gear_info_text(gear), reply_markup=EQUIP_Kb(gear.id))
     else:
@@ -93,13 +93,13 @@ async def user_stats_increase(m: Message, user: User):
 async def user_stats_increase_query(c: CallbackQuery, user: User):
     if user.level_points > 0:
         if c.data[13:] == 'damage':
-            await user.update(attack=user.damage+1, level_points=user.level_points-1).apply()
+            await user.update(damage=user.damage+1, level_points=user.level_points-1).apply()
             await c.answer('❕ Урон увеличен.', show_alert=True)
         elif c.data[13:] == 'health':
-            await user.update(attack=user.max_health+1, level_points=user.level_points-1).apply()
+            await user.update(damage=user.max_health+1, level_points=user.level_points-1).apply()
             await c.answer('❕ Здоровье увеличено', show_alert=True)
         elif c.data[13:] == 'defence':
-            await user.update(attack=user.max_defence+1, level_points=user.level_points-1).apply()
+            await user.update(damage=user.max_defence+1, level_points=user.level_points-1).apply()
             await c.answer('❕ Защита увеличена', show_alert=True)
     else:
         await c.message.edit_text(text='❗ Ты использовал все очки повышения')

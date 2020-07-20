@@ -62,6 +62,7 @@ async def admin_commands(m: Message):
             lst = m.text.split(' ')
             result = await User.get(int(lst[1]))
             if result:
+                m.from_user.first_name = result.id
                 await user_profile(m, result, False)
             else:
                 await m.reply('❗ Ничего не найдено')
@@ -81,17 +82,16 @@ async def admin_commands(m: Message):
 
 
 async def admin_get_handler(m: Message, state: FSMContext):
-    try:
-        if m.forward_from:
-            result = await User.get(m.forward_from)
-            if result:
-                await user_profile(m, result, False)
-            else:
-                await m.reply('❗ Юзер не зарегистрирован.')
+    if m.forward_from:
+        result = await User.get(m.forward_from)
+        if result:
+            m.from_user.first_name = m.forward_from.first_name
+            await user_profile(m, result, False)
         else:
-             await m.reply('❗ ПЕРЕШЛИ СООБЩЕНИЕ')
-    finally:
-        await state.reset_state()
+            await m.reply('❗ Юзер не зарегистрирован.')
+    else:
+        await m.reply('❗ ПЕРЕШЛИ СООБЩЕНИЕ')
+    await state.reset_state()
 
 
 async def IDLE(m: Message, user: dict):

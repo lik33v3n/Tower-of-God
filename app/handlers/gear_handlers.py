@@ -10,28 +10,30 @@ from ..helpers.keyboards import CRAFT_Kb, EQUIPMENT_Kb, IDLE_Kb, UNDRESS_Kb
 
 
 async def gear_equip(c: CallbackQuery, user: User):
-    gear = await Item.get(c.data[6:])
     if c.data[6:] == 'back':
         with suppress(MessageToDeleteNotFound):
             await c.message.delete()
         await user_inventory(c.message, user)
-    elif gear.id in User.inventory:
-        if getattr(user, gear.item_class) is None:
-            user.inventory.remove(gear.id)
-            await user.update(inventory=user.inventory, defence=user.defence + gear.defence_boost,
-                              max_defence=user.max_defence + gear.defence_boost, 
-                              damage=user.damage + gear.attack_boost).apply()
-            
-            await user.update(weapon=gear.id).apply() if gear.item_class == 'weapon' else await user.update(armor=gear.id).apply()
+    else:
+        gear = await Item.get(int(c.data[6:]))
+        if gear.id in user.inventory:
+            if getattr(user, gear.item_class) is None:
+                user.inventory.remove(gear.id)
+                await user.update(inventory=user.inventory, defence=user.defence + gear.defence_boost,
+                                max_defence=user.max_defence + gear.defence_boost, 
+                                damage=user.damage + gear.attack_boost).apply()
                 
-            await c.message.delete()
-            await c.message.answer(text="❕ Вы надели экипировку", reply_markup=IDLE_Kb())
+                await user.update(weapon=gear.id).apply() if gear.item_class == 'weapon' else await user.update(armor=gear.id).apply()
+                    
+                await c.message.delete()
+                await c.message.answer(text="❕ Вы надели экипировку", reply_markup=IDLE_Kb())
+            else:
+                await c.message.delete()
+                await c.message.answer(text="❗ Сначала снимите экипировку", reply_markup=EQUIPMENT_Kb())
         else:
             await c.message.delete()
-            await c.message.answer(text="❗ Сначала снимите экипировку", reply_markup=EQUIPMENT_Kb())
-    else:
-        await c.message.delete()
-        await c.message.answer(text="❗ У вас нету такого предмета", reply_markup=IDLE_Kb())
+            await c.message.answer(text="❗ У вас нету такого предмета", reply_markup=IDLE_Kb())
+    
 
 
 async def gear_unequip(m: Message, user: User):
@@ -43,7 +45,7 @@ async def gear_unequip(m: Message, user: User):
                 gear = await Item.get(eq[i])
                 data.extend([gear.name, gear.id])
             else:
-                data.extend(['Пусто', 'empty'])
+                data.extend(['- Пусто -', 'empty'])
         await m.answer('❔ Выбери какую экипировку снимать:',
                        reply_markup=UNDRESS_Kb(data))
     else:
@@ -51,13 +53,13 @@ async def gear_unequip(m: Message, user: User):
 
 
 async def gear_unequip_query(c: CallbackQuery, user: User):
-    gear = await Item.get(c.data[8:])
+    gear = await Item.get(int(c.data[8:]))
     # user.weapon => Common Sword (example)
     if gear:
         user.inventory.append(gear.id)
         await user.update(defence=user.defence - gear.defence_boost, 
                           max_defence=user.max_defence - gear.defence_boost,
-                          damage=user.damage - gear.attack_boost, inventory=user.inventory).append
+                          damage=user.damage - gear.attack_boost, inventory=user.inventory).apply()
         await user.update(weapon=None).apply() if gear.item_class == 'weapon' else await user.update(armor=None).apply()
 
         with suppress(MessageToDeleteNotFound):
@@ -75,10 +77,10 @@ async def gear_craft(m: Message, user: User):
         inv = dict((x, int(user.inventory.count(x) / 2)) for x in set(user.inventory) if user.inventory.count(x) != 1)
         if inv:
             for x, y in inv.items():
-                raw_items = await Item.get(x)
+                raw_items = await Item.get(int(x))
                 if raw_items:
                     for _ in range(y):
-                        raw.append(raw_items[0])
+                        raw.append(raw_items)
             print(inv, '|', raw_items, '|', raw)
             await m.answer(text='🧳❕ Выберите какую пару предметов крафтить:', reply_markup=CRAFT_Kb(raw))
         else:
@@ -88,7 +90,7 @@ async def gear_craft(m: Message, user: User):
 
 
 async def gear_craft_query(c: CallbackQuery, user: User):
-    curr_gear = await Item.get(c.data[6:])
+    curr_gear = await Item.get(int(c.data[6:]))
     if curr_gear:
         for _ in range(2):
             if curr_gear.id in user.inventory:

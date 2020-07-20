@@ -7,6 +7,7 @@ from aiogram.types import (CallbackQuery, KeyboardButton, Message,
                            ReplyKeyboardMarkup)
 from aiogram.types.chat import ChatActions
 from aiogram.utils.exceptions import MessageToDeleteNotFound
+from sqlalchemy import and_
 
 from app.__main__ import bot
 
@@ -42,18 +43,20 @@ async def pve_rankup(m: Message, state: FSMContext, user: User):
 
 async def pve_battle(m: Message, state: FSMContext, user: User):
     if user.health > 0:
+        await MainStates.battle.set()
         await m.reply('⏳ <i>Башня ищет вам противника..</i>',
                       reply_markup=ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton('~')))
         await ChatActions().typing(sleep=randint(1, 5))
-        multiplier = round_down(uniform(0.2, 1.2), 1)
+        multiplier = round_down(uniform(0.3, 1.2), 1)
         async with state.proxy() as data:
-            enemy_power = (int(user.max_health * multiplier) + int(user.max_defence * multiplier)) * int(user.damage * multiplier)
-            var = enemy_power / power(user)            
+            enemy_power = (int(user.health * multiplier) + int(user.defence * multiplier)) * int(user.damage * multiplier)
+            var = power(user) / enemy_power           
             enemy = Enemy(name=choice(MOB_NAMES), damage=int(user.damage * multiplier), 
-                          health=int(user.max_health * multiplier), defence=int(user.max_defence * multiplier), 
-                          drop_chance=randint(1, 15), bonus=int((enemy_power / user.lvl) * var))
+                          health=int(user.health * multiplier), defence=int(user.defence * multiplier), 
+                          drop_chance=randint(1, 15), bonus=int(enemy_power / var))
+            print(enemy.bonus)
             data['enemy'] = enemy
-            print(multiplier, var)
+            print(multiplier, var, '|', power(user), power(enemy))
             try:
                 await m.answer(text=meet_enemy_text(data['enemy'], set_difficulty(power(data['enemy']), power(user))),
                                reply_markup=CONFIRM_BATTLE_Kb())
@@ -68,7 +71,6 @@ async def pve_battle(m: Message, state: FSMContext, user: User):
 async def pve_confirmed(c: CallbackQuery, state: FSMContext):
     with suppress(MessageToDeleteNotFound):
         await c.message.delete()
-    await MainStates.battle.set()
     await c.message.answer('⏳ <i>Башня готовит поле боя..</i>', reply_markup=PVE_LEAVE_Kb())
     await ChatActions().typing(sleep=randint(1, 5))
     bot_msg = await c.message.answer(text="❕ Выбери место защиты:", reply_markup=DEFENCE_Kb())
@@ -121,7 +123,7 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
                         await user.update(balance=user.balance + enemy.bonus // 2).apply()
                         await c.message.answer(text=f"💰 Вы получили +{enemy.bonus // 2} <i>мoнет</i>!")
                         if item_drop(enemy.drop_chance) is True:
-                            drop_list = await Item.query.where(Item.rank == user.rank, Item.quality == 'Common').gino.all()
+                            drop_list = await Item.query.where(and_(Item.rank == user.rank, Item.quality == 'Common')).gino.all()
                             if drop_list:
                                 dropped_item = choice(drop_list)
                                 await user.update(inventory=user.inventory.append(dropped_item.id)).apply()
