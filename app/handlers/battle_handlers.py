@@ -81,10 +81,13 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
     with suppress(MessageToDeleteNotFound):
         await c.message.delete()
     async with state.proxy() as data:
-        enemy = data['enemy']
-    if enemy != {}:
+        try: enemy = data['enemy']
+        except KeyError: enemy = None
+    if enemy:
+        pre_health, pre_defence = enemy.health, enemy.defence
         enemy.health, enemy.defence = await battle_attack(0, randint(0, 3), user, enemy, call=c)
-        await c.message.answer(text=f"🗡 \"{enemy.name}\" <b>(♥:{enemy.health} | 🛡:{enemy.defence})</b>")
+        await c.message.answer(text=f"🗡 \"{enemy.name}\" <b>♥:{enemy.health}</b>(-{pre_health-enemy.health}) <b>|</b> "
+                                    f"🛡:<b>{enemy.defence}</b>(-{pre_defence-enemy.defence})")
         if enemy.health > 0:
             bot_msg = await c.message.answer(text="❕ Выбери место защиты:", reply_markup=DEFENCE_Kb())
             await state.update_data({'bot_message_id': bot_msg.message_id})
@@ -138,7 +141,7 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
                         f"<i>Вам засчитано (10) очков повышения.</i>", reply_markup=STATS_INC_Kb())
             finally:
                 await state.reset_state()
-                await state.set_data({'enemy': {}})
+                await state.reset_data()
     else:
         await state.reset_state()
         await c.message.answer("❗ Данный бой потерял актуальность", reply_markup=IDLE_Kb())
@@ -148,10 +151,13 @@ async def pve_defence(c: CallbackQuery, state: FSMContext, user: User):
     with suppress(MessageToDeleteNotFound):
         await c.message.delete()
     async with state.proxy() as data:
-        enemy = data['enemy']
-    if enemy != {}:
+        try: enemy = data['enemy']
+        except KeyError: enemy = None
+    if enemy:
+        pre_health, pre_defence = user.health, user.defence
         user.health, user.defence = await battle_defence(0, randint(0, 3), user, enemy, call=c)
-        await c.message.answer(text=f"🛡 {c.from_user.first_name} <b>(♥:{user.health} | 🛡:{user.defence})</b>")
+        await c.message.answer(text=f"🗡 \"{c.from_user.first_name}\" <b>♥:{user.health}</b>(-{pre_health-user.health}) <b>|</b> "
+                                    f"🛡:<b>{user.defence}</b>(-{pre_defence-user.defence})")
         if user.health > 0:
             await user.update(health=user.health, defence=user.defence).apply()
             bot_msg = await c.message.answer(text="❕ Выбери место атаки:", reply_markup=ATTACK_Kb())
@@ -171,7 +177,7 @@ async def pve_defence(c: CallbackQuery, state: FSMContext, user: User):
                     logging.info(f"{c.from_user.first_name} провалил экзамен")
             finally:
                 await state.reset_state()
-                await state.set_data({'enemy': {}})
+                await state.reset_data()
     else:
         await state.reset_state()
         await c.message.answer("❗ Данный бой потерял актуальность", reply_markup=IDLE_Kb())
@@ -180,17 +186,16 @@ async def pve_defence(c: CallbackQuery, state: FSMContext, user: User):
 async def pve_leave_battle(m: Message, state: FSMContext, user: User):
     async with state.proxy() as data:
         enemy = data['enemy']
-        try:
-            with suppress(MessageToDeleteNotFound):
-                await bot.delete_message(chat_id=m.chat.id, message_id=data['bot_message_id'])
-        except KeyError:
-            return
     try:
+        with suppress(MessageToDeleteNotFound):
+            await bot.delete_message(chat_id=m.chat.id, message_id=data['bot_message_id'])
         await user.update(xp=user.xp - enemy.bonus // 2 if user.xp - enemy.bonus // 2 > 0 else -1).apply()
         await m.answer(
             text=f"☠️ <i>Башня зарегистрировала твоё поражение\n Опыт понижен на {enemy.bonus // 2}XP</i>",
             reply_markup=IDLE_Kb())
         logging.info(f"{m.from_user.first_name} сдался")
+    except KeyError:
+        return
     finally:
         await state.reset_state()
-        await state.set_data({'enemy': {}})
+        await state.reset_data()

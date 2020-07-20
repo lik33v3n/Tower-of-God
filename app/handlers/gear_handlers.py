@@ -1,3 +1,4 @@
+import logging
 from contextlib import suppress
 
 from aiogram.types import CallbackQuery, Message
@@ -7,6 +8,20 @@ from ..database.base import User, Item
 from ..handlers.user_handlers import user_inventory
 from ..helpers.dev_text import gear_info_text
 from ..helpers.keyboards import CRAFT_Kb, EQUIPMENT_Kb, IDLE_Kb, UNDRESS_Kb
+
+
+async def gear_info_check(m: Message):
+    try:
+        gear = await Item.get(int(m.text[1:]))
+        if gear:
+            await m.answer(text=gear_info_text(gear))
+        else:
+            with suppress(MessageToDeleteNotFound):
+                await m.delete()
+            await m.answer('❗ Такого предмета не существует') 
+    except ValueError:
+        return
+    
 
 
 async def gear_equip(c: CallbackQuery, user: User):
