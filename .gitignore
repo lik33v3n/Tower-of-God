@@ -142,3 +142,4 @@ log.log
 # secrets
 config.py
 *.pyc
+alembic.ini
