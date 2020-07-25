@@ -156,3 +156,10 @@ def FUNC_LIST_Kb():
 #         kb.insert(
 #             types.InlineKeyboardButton(text=matches[i].username, callback_data=f"get_{matches[i].telegram_id}"))
 #     return kb
+
+
+def CONFIRM_Kb(text: str, callback: str):
+    kb = types.InlineKeyboardMarkup(row_width=2)
+    kb.row(types.InlineKeyboardButton(text, callback), 
+           types.InlineKeyboardButton(text='🔚 Закрыть', callback_data='back'))
+    return kb

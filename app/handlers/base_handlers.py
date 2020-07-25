@@ -10,7 +10,7 @@ from aiogram.utils.exceptions import CantParseEntities, MessageNotModified, Mess
 from ..database.db import db
 from ..database.user import User
 from ..handlers.user_handlers import user_profile
-from ..helpers.keyboards import FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
+from ..helpers.keyboards import FUNC_LIST_Kb, HELP_Kb, IDLE_Kb, CONFIRM_Kb
 from ..helpers.scenario import func_description, greetings, help_text
 from ..utils.states import AdminStates
 
@@ -71,14 +71,9 @@ async def admin_commands(m: Message):
             await m.reply("Перешли любое сообщение от юзера.")
 
     elif '!deluser' in m.text:
-        # try:
-        #     lst = m.text.split(' ')
-        #     lst[1] = lst[1].replace('_', ' ')
-        #     await User.query.filter(User.id == lst[1]).delete()
-        #     await m.answer(f'{lst[1]} was successfully removed from the game!')
-        # except Exception as err:
-        #     await m.reply(err.__class__.__name__)
-        pass
+        if m.text == '!deluser':
+            await AdminStates.deluser.set()
+            await m.reply("Перешли любое сообщение от юзера.")
 
 
 async def admin_get_handler(m: Message, state: FSMContext):
@@ -87,6 +82,23 @@ async def admin_get_handler(m: Message, state: FSMContext):
         if result:
             m.from_user.first_name = m.forward_from.first_name
             await user_profile(m, result, False)
+        else:
+            await m.reply('❗ Юзер не зарегистрирован.')
+    else:
+        await m.reply('❗ ПЕРЕШЛИ СООБЩЕНИЕ')
+    await state.reset_state()
+
+
+async def admin_del_handler(m: Message, state: FSMContext):
+    if m.forward_from:
+        result = await User.get(m.forward_from)
+        if result:
+            try:
+                await User.delete.where(User.id == result.id).gino.first()
+                await m.answer(f'{result.id} was successfully removed from the game!')
+            except Exception as err:
+                await m.reply(err.__class__.__name__)
+                raise err
         else:
             await m.reply('❗ Юзер не зарегистрирован.')
     else:

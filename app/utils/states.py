@@ -7,3 +7,4 @@ class MainStates(StatesGroup):
 
 class AdminStates(StatesGroup):
     getuser = State()
+    deluser = State()

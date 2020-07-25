@@ -20,6 +20,7 @@ def setup(dp: Dispatcher):
     dp.register_callback_query_handler(help_query, lambda c: True and c.data[:5] == "help_")
     dp.register_message_handler(admin_commands, IDFilter(user_id=397247994), Command(commands=ADMIN_COMMANDS, prefixes='!'), state='*')
     dp.register_message_handler(admin_get_handler, IDFilter(user_id=397247994), state=AdminStates.getuser)
+    dp.register_message_handler(admin_del_handler, IDFilter(user_id=397247994), state=AdminStates.deluser)
     dp.register_message_handler(IDLE, lambda m: m.text and not m.text.startswith(('!', '/')) and m.text not in AVAILABLE_COMMANDS)
     dp.register_callback_query_handler(back, lambda c: True and c.data == 'back', state='*')
     # Base handlers. ^^^
