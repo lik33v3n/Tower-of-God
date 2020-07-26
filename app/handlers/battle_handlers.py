@@ -20,7 +20,7 @@ from ..helpers.scenario import MOB_NAMES
 from ..models.enemies import Enemy
 from ..utils.game_logic import (battle_attack, battle_defence, exam_choose,
                                 get_xp, item_drop, power, round_down,
-                                set_difficulty)
+                                set_difficulty, enemy_calc)
 from ..utils.states import MainStates
 
 
@@ -47,16 +47,11 @@ async def pve_battle(m: Message, state: FSMContext, user: User):
         await m.reply('⏳ <i>Башня ищет вам противника..</i>',
                       reply_markup=ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton('~')))
         await ChatActions().typing(sleep=randint(1, 5))
-        multiplier = round_down(uniform(0.3, 1.2), 1)
+        raw_enemy = enemy_calc(user.damage, user.health, user.defence, user.lvl)
         async with state.proxy() as data:
-            enemy_power = (int(user.health * multiplier) + int(user.defence * multiplier)) * int(user.damage * multiplier)
-            var = power(user) / enemy_power           
-            enemy = Enemy(name=choice(MOB_NAMES), damage=int(user.damage * multiplier), 
-                          health=int(user.health * multiplier), defence=int(user.defence * multiplier), 
-                          drop_chance=randint(1, 15), bonus=int(enemy_power / var))
-            print(enemy.bonus)
+            enemy = Enemy(name=choice(MOB_NAMES), damage=raw_enemy[0][0], health=raw_enemy[0][1], defence=raw_enemy[0][2], 
+                          drop_chance=randint(1, 15), bonus=raw_enemy[1])
             data['enemy'] = enemy
-            print(multiplier, var, '|', power(user), power(enemy))
             try:
                 await m.answer(text=meet_enemy_text(data['enemy'], set_difficulty(power(data['enemy']), power(user))),
                                reply_markup=CONFIRM_BATTLE_Kb())

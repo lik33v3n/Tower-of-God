@@ -14,7 +14,7 @@ def user_text(user, username, boost, equipment):
             f"🔪 Оружие: {'-' if user.weapon is None else ' /'.join((equipment[0].split(' ', 1)[1], str(user.weapon)))}\n"
             f"🥋 Броня: {'-' if user.armor is None else ' /'.join((equipment[1].split(' ', 1)[1], str(user.armor)))}\n"
             f"💼 Инвентарь: {len(user.inventory) if user.inventory else 0}\n\n"
-            f"⚜ Сила: {power(user, maximal=True)}\n"
+            f"⚜ Сила: {power(user)}/{power(user, maximal=True)}\n"
             f"💰 Баланс: {user.balance}\n"
             f"🏆 Ранг: {user.rank}")
 

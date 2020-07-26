@@ -102,10 +102,8 @@ def get_xp(lvl):
     Returns total XP according to gain level
     """
     if lvl != 1:
-        nmath = ((lvl - 1) * 10) ** 1.1
-        # total:
-        math1 = nmath * lvl
-        total_xp = round(math1 / 10) * 10
+        math = (((lvl - 1) * 10) ** 1.2) * lvl
+        total_xp = round(math / 10) * 10
     else:
         total_xp = 15
     return total_xp
@@ -144,3 +142,16 @@ def round_down(n, decimals=0):
     """
     multiplier = 10 ** decimals
     return math.floor(n * multiplier) / multiplier
+
+
+def enemy_calc(u_attack, u_health, u_defence, lvl):
+    enemy, result = [], []
+    multiplier = round_down(random.uniform(0.6, 1.2), 1)
+    for stat in (u_attack, u_health, u_defence):
+        enemy.append(int(stat*multiplier))
+
+    print(enemy, multiplier)
+    e_power = enemy[0]*(enemy[1]+enemy[2])
+    result = [enemy, int((e_power/random.randint(5,10))*(10+random.randint(lvl-1, lvl+2)+lvl)/(5+lvl)//(math.sqrt(lvl)))]
+    
+    return result

@@ -6,10 +6,12 @@ from aiogram.dispatcher import Dispatcher
 
 from app import config
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', 
+                    level=logging.INFO)
 # filename='log.log', filemode='a'
 
-logging.getLogger('gino.engine').setLevel(logging.ERROR)  # disabling gino flood
+logging.getLogger('gino.engine').setLevel(logging.ERROR)
 
 
 storage = MemoryStorage()
@@ -40,4 +42,6 @@ async def shutdown(_):
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_startup=startup, on_shutdown=shutdown)
+    executor.start_polling(dp, skip_updates=True, 
+                               on_startup=startup, 
+                               on_shutdown=shutdown)
