@@ -6,12 +6,11 @@ from aiogram.dispatcher import Dispatcher
 
 from app import config
 
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', 
-                    level=logging.INFO)
-# filename='log.log', filemode='a'
-
-logging.getLogger('gino.engine').setLevel(logging.ERROR)
+logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO, 
+                    handlers=[logging.FileHandler("log.log"), logging.StreamHandler()])
+                    
+logging.getLogger("apscheduler").setLevel(logging.ERROR)
+logging.getLogger("gino.engine").setLevel(logging.ERROR)
 
 
 storage = MemoryStorage()
@@ -20,25 +19,30 @@ dp = Dispatcher(bot, storage=storage)
 
 
 async def startup(_):
+    from app.utils.scheduler import scheduler
+    scheduler.start()
+
     from app.database.db import connect
     await connect()
-    logging.info("*Database has been connected.")
+    logging.info("*Database was connected.")
 
     from app.middlewares import RegisterMiddleware, DevelopmentMiddleware
     dp.middleware.setup(DevelopmentMiddleware())
     dp.middleware.setup(RegisterMiddleware())
-    logging.info('*All middlewares have been configured.')
+    logging.info("*All middlewares were configured.")
 
     from app import handlers
     handlers.setup(dp)
-    logging.info('*All handlers have been configured.')
+    logging.info("*All handlers were configured.")
 
 
 async def shutdown(_):
-    logging.info("*Database has been disconnected.")
+    logging.info("*Database was disconnected.")
     from app.database.db import disconnect
     await disconnect()
-    
+
+    from app.utils.scheduler import scheduler
+    scheduler.shutdown(wait=False)
 
 
 if __name__ == '__main__':

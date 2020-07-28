@@ -3,8 +3,8 @@ import json
 import math
 
 
-AVAILABLE_COMMANDS = ("👤 Профиль", "⚔️ Бой", "💉 Исцеление", "📯 Повышение ранга",
-                      "💼 Инвентарь", "📤 Снять экипировку", "🥋 Экипировка",
+AVAILABLE_COMMANDS = ("👤 Профиль", "⚔️ Бой", "💉 Лечение", "🧪 Лечебные зелья", "📯 Повышение ранга",
+                      "💊 Лазарет", "💼 Инвентарь", "📤 Снять экипировку", "🥋 Экипировка",
                       "⚖️ Повышение характеристик", "⚒ Крафт", "🔈 Помощь",
                       "🛒 Магазин", '/help')
 
@@ -147,11 +147,12 @@ def round_down(n, decimals=0):
 def enemy_calc(u_attack, u_health, u_defence, lvl):
     enemy, result = [], []
     multiplier = round_down(random.uniform(0.6, 1.2), 1)
+    print(multiplier)
     for stat in (u_attack, u_health, u_defence):
-        enemy.append(int(stat*multiplier))
-
-    print(enemy, multiplier)
+        enemy.append(round(stat*multiplier) if stat != 0 else 0)
+        
     e_power = enemy[0]*(enemy[1]+enemy[2])
-    result = [enemy, int((e_power/random.randint(5,10))*(10+random.randint(lvl-1, lvl+2)+lvl)/(5+lvl)//(math.sqrt(lvl)))]
+    formulae = int((e_power/random.randint(5,10))*(10+random.randint(lvl-1, lvl+2)+lvl)/(5+lvl)//(math.sqrt(lvl)))
+    result = [enemy, formulae if formulae > 1 else 2]
     
     return result

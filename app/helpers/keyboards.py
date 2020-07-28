@@ -8,7 +8,7 @@ def IDLE_Kb():
         types.KeyboardButton(text='👤 Профиль')).add(
         types.KeyboardButton(text='💼 Инвентарь')).add(
         types.KeyboardButton(text='⚔️ Бой')).add(
-        types.KeyboardButton(text='💉 Исцеление'))
+        types.KeyboardButton(text='💉 Лечение'))
     return main_kb
 
 
@@ -26,6 +26,15 @@ def EQUIPMENT_Kb():
     reply_kb.add(
         types.KeyboardButton(text='📤 Снять экипировку')).add(
         types.KeyboardButton(text='⚒ Крафт')).add(
+        types.KeyboardButton(text='🔙 Назад'))
+    return reply_kb
+
+
+def HEALING_Kb():
+    reply_kb = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    reply_kb.add(
+        types.KeyboardButton(text='💊 Лазарет')).add(
+        types.KeyboardButton(text='🧪 Лечебные зелья')).add(
         types.KeyboardButton(text='🔙 Назад'))
     return reply_kb
 
@@ -160,6 +169,14 @@ def FUNC_LIST_Kb():
 
 def CONFIRM_Kb(text: str, callback: str):
     kb = types.InlineKeyboardMarkup(row_width=2)
-    kb.row(types.InlineKeyboardButton(text, callback), 
+    kb.row(types.InlineKeyboardButton(text=text, callback_data=callback), 
            types.InlineKeyboardButton(text='🔚 Закрыть', callback_data='back'))
     return kb
+
+
+def HEALING_STATE_Kb():
+    reply_kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    reply_kb.add(*[
+        types.KeyboardButton(text='❔ Информация'),
+        types.KeyboardButton(text='🔚 Покинуть лазарет')])
+    return reply_kb

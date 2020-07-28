@@ -1,16 +1,19 @@
+import logging
 from collections import deque
 from contextlib import suppress
 from datetime import datetime
 
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, Update
 from aiogram.types.chat import ChatActions
-from aiogram.utils.exceptions import CantParseEntities, MessageNotModified, MessageToDeleteNotFound
+from aiogram.utils.markdown import quote_html
+from aiogram.utils.exceptions import (CantParseEntities, MessageNotModified,
+                                      MessageToDeleteNotFound)
 
 from ..database.db import db
 from ..database.user import User
 from ..handlers.user_handlers import user_profile
-from ..helpers.keyboards import FUNC_LIST_Kb, HELP_Kb, IDLE_Kb, CONFIRM_Kb
+from ..helpers.keyboards import CONFIRM_Kb, FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
 from ..helpers.scenario import func_description, greetings, help_text
 from ..utils.states import AdminStates
 
@@ -53,9 +56,9 @@ async def admin_commands(m: Message):
         with open('log.log', 'r') as log:
             try:
                 for row in deque(log, int(m.text[4:])):
-                    data += f'{row}'
-                await m.reply(text=data)
-            except (ValueError, CantParseEntities) as err:
+                    data += quote_html(row)
+                await m.reply(data)
+            except (ValueError) as err:
                 await m.reply(f'<b>{err.__class__.__name__}</b> - Введи правильное число строк!')
     elif '!get' in m.text: 
         if len(m.text) > 4:
@@ -80,7 +83,7 @@ async def admin_get_handler(m: Message, state: FSMContext):
     if m.forward_from:
         result = await User.get(m.forward_from)
         if result:
-            m.from_user.first_name = m.forward_from.first_name
+            m.from_user.first_name = f'{m.forward_from.id}({m.forward_from.first_name})'
             await user_profile(m, result, False)
         else:
             await m.reply('❗ Юзер не зарегистрирован.')
@@ -119,10 +122,11 @@ async def back(c: CallbackQuery, state: FSMContext):
     await c.message.answer('Главное меню <b>“Tower of God”</b>.', reply_markup=IDLE_Kb())
 
 
-# @dp.errors_handler()
-# async def errors_handler(update: types.Update, exception: Exception):
-#     try:
-#         raise exception
-#     except Exception as e:
-#         logging.error(f"[TOWER] \"Exception {e} in update\" {update.update_id} | ")
-#     return True
+async def errors_handler(update: Update, exception: Exception):
+    try:
+        raise exception
+    except Exception as e:
+        time = datetime.now().strftime('%d.%m.%y - %H:%M:%S')
+        with suppress(AttributeError):
+            await update.message.reply(f'Произошла ошибка: <b>{e.__class__.__name__}</b>.\nTraceback: \"<i>{e}</i>\".'
+                                       f'\nВремя ошибки: <b>{time}</b> \n<i>Cообщите администрации - @likeeven</i>')

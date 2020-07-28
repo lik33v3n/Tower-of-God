@@ -52,11 +52,11 @@ async def gear_equip(c: CallbackQuery, user: User):
 
 
 async def gear_unequip(m: Message, user: User):
-    if user.weapon or user.armor:
+    if (user.weapon or user.armor) != None:
         eq = [user.weapon, user.armor]
         data = []
         for i in range(len(eq)):
-            if eq[i]:
+            if eq[i] != None:
                 gear = await Item.get(eq[i])
                 data.extend([gear.name, gear.id])
             else:

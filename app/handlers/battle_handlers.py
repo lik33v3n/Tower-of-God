@@ -99,20 +99,9 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
                             await user.update(level_points=user.level_points, 
                                               xp=user.xp+enemy.bonus, 
                                               lvl=user.lvl+lvl_increase).apply()
-                            # next stage:
-                            if (user.lvl + lvl_increase) // 3 > user.stage - 1:
-                                await user.update(stage=user.stage+1).apply()
-                                if 15 <= user.stage + 1 <= 1000000:
-                                    await user.update(level_points=user.level_points+3).apply()
-                                    await c.message.answer(text=lvl_up_text(enemy.bonus, 6),
-                                                           reply_markup=PROFILE_Kb())
-                                else:
-                                    await c.message.answer(text=lvl_up_text(enemy.bonus, 3),
-                                                           reply_markup=PROFILE_Kb())
-                            else:
-                                await c.message.answer(
-                                    text=f"🎊 Вы получили +{enemy.bonus}<i>XP</i>, и ваш уровень повышен!\n"
-                                         f"<i>Вам засчитано (3) очки повышения.</i>", reply_markup=PROFILE_Kb())
+                            await c.message.answer(
+                                text=f"🎊 Вы получили +{enemy.bonus}<i>XP</i>, и ваш уровень повышен!\n"
+                                     f"<i>Вам засчитано (3) очки повышения.</i>", reply_markup=PROFILE_Kb())
                         else:
                             await user.update(health=user.health, defence=user.defence, xp=user.xp+enemy.bonus).apply()
                             await c.message.answer(text=f"✨ Вы получили +{enemy.bonus} <i>XP</i>!",
@@ -124,16 +113,17 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
                             drop_list = await Item.query.where(and_(Item.rank == user.rank, Item.quality == 'Common')).gino.all()
                             if drop_list:
                                 dropped_item = choice(drop_list)
-                                await user.update(inventory=user.inventory.append(dropped_item.id)).apply()
-                                await c.message.answer(f"❗ Вам выпал предмет: \"{dropped_item.name}\".\n"
+                                user.inventory.append(dropped_item.id)
+                                await user.update(inventory=user.inventory).apply()
+                                await c.message.answer(f"❗ Вам выпал предмет: \n\"{dropped_item.name}\".\n"
                                                        f"<i>Предмет помещён в ваш инвентарь</i>")
                             else:
                                 print('NO SUCH ITEMS ON THIS RANK')
                 else:
-                    await user.update(rank=enemy.rank, level_points=user.level_points+10).apply()
+                    await user.update(rank=enemy.rank, level_points=user.level_points+5).apply()
                     await c.message.answer(
                         f"🎊 Вы победили экзаменатора! Поздравляем, теперь ваш ранг - {enemy.rank}. "
-                        f"<i>Вам засчитано (10) очков повышения.</i>", reply_markup=STATS_INC_Kb())
+                        f"<i>Вам засчитано (5) очков повышения.</i>", reply_markup=STATS_INC_Kb())
             finally:
                 await state.reset_state()
                 await state.reset_data()

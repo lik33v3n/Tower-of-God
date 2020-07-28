@@ -23,6 +23,7 @@ def setup(dp: Dispatcher):
     dp.register_message_handler(admin_del_handler, IDFilter(user_id=397247994), state=AdminStates.deluser)
     dp.register_message_handler(IDLE, lambda m: m.text and not m.text.startswith(('!', '/')) and m.text not in AVAILABLE_COMMANDS)
     dp.register_callback_query_handler(back, lambda c: True and c.data == 'back', state='*')
+    dp.register_errors_handler(errors_handler)
     # Base handlers. ^^^
     dp.register_message_handler(pve_rankup, lambda m: m.text and m.text == '📯 Повышение ранга')
     dp.register_message_handler(pve_battle, lambda m: m.text and m.text == '⚔️ Бой')
@@ -32,7 +33,8 @@ def setup(dp: Dispatcher):
     dp.register_message_handler(pve_leave_battle, lambda m: m.text and m.text == '⛔️ Сдаться', state=MainStates.battle)
     # Battle handlers. ^^^
     dp.register_message_handler(shop_func, lambda m: m.text and m.text == '🛒 Магазин')
-    dp.register_message_handler(shop_query, lambda m: m.text and m.text in ('🏹 Buy armor', '🥋 Buy weapon', '🧪 Buy potion'), state=MainStates.shopping)
+    dp.register_message_handler(shop_query, lambda m: m.text and m.text in ('🏹 Buy armor', '🥋 Buy weapon', '🧪 Buy potion'), 
+                                                                            state=MainStates.shopping)
     dp.register_callback_query_handler(buy_heal_potion, lambda c: True and c.data == 'buy_heal_potion')
     # Game handlers. ^^^
     dp.register_message_handler(gear_info_check, lambda m: m.text and m.text.startswith('/'))
@@ -46,7 +48,12 @@ def setup(dp: Dispatcher):
     dp.register_message_handler(user_inventory, lambda m: m.text and m.text == '💼 Инвентарь')
     dp.register_callback_query_handler(user_inventory_items, lambda c: True and c.data[:4] == 'inv_')
     dp.register_message_handler(user_equipment, lambda m: m.text and m.text == '🥋 Экипировка')
-    dp.register_message_handler(user_heal, lambda m: m.text and m.text == '💉 Исцеление')
+    dp.register_message_handler(user_healing_options, lambda m: m.text and m.text == '💉 Лечение')
+    dp.register_message_handler(user_healing, lambda m: m.text and m.text == '💊 Лазарет')
+    dp.register_callback_query_handler(user_healing_query, lambda c: True and c.data == 'enter_healing')
+    dp.register_message_handler(user_healing_cancel, lambda m: m.text and m.text == '🔚 Покинуть лазарет', state=MainStates.healing)
+    dp.register_message_handler(user_healing_info, lambda m: m.text and m.text == '❔ Информация', state=MainStates.healing)
+    dp.register_message_handler(user_heal, lambda m: m.text and m.text == '🧪 Лечебные зелья')
     dp.register_callback_query_handler(user_heal_query, lambda c: True and c.data == 'use_heal_potion')
     dp.register_message_handler(user_stats_increase, lambda m: m.text and m.text == '⚖️ Повышение характеристик')
     dp.register_callback_query_handler(user_stats_increase_query, lambda c: True and c.data[:13] == 'update_level_')

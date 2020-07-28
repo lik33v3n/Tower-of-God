@@ -9,7 +9,6 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, index=True, unique=True, comment='Уникальный ID')
     rank = db.Column(db.String(1), nullable=False, default='-', comment='Ранг')
-    stage = db.Column(db.Integer, nullable=False, default=1, comment='Этаж')
     lvl = db.Column(db.Integer, nullable=False, default=1, comment='Уровень')
     xp = db.Column(db.Integer, nullable=False, default=0, comment='Опыт')
     damage = db.Column(db.Integer, nullable=False, default=3, comment='Наносимый урон')

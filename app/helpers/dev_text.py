@@ -4,7 +4,6 @@ from app.utils.game_logic import power, get_xp
 def user_text(user, username, boost, equipment):
     return (f"Игрок: {username} ({user.xp}/{get_xp(user.lvl)})\n"
             f"🎖 Уровень: {user.lvl} ({user.level_points})\n"
-            f"📯 Этаж башни: {user.stage}\n"
             f"💉 Лечебные зелья: {user.heal_potions}\n\n"
             f"🗡 Урон: {user.damage} "
             f"(+{boost[0] + boost[2] if boost is not None else 0})\n"
@@ -14,7 +13,7 @@ def user_text(user, username, boost, equipment):
             f"🔪 Оружие: {'-' if user.weapon is None else ' /'.join((equipment[0].split(' ', 1)[1], str(user.weapon)))}\n"
             f"🥋 Броня: {'-' if user.armor is None else ' /'.join((equipment[1].split(' ', 1)[1], str(user.armor)))}\n"
             f"💼 Инвентарь: {len(user.inventory) if user.inventory else 0}\n\n"
-            f"⚜ Сила: {power(user)}/{power(user, maximal=True)}\n"
+            f"⚜ Сила: <b>{power(user)}</b>/{power(user, maximal=True)}\n"
             f"💰 Баланс: {user.balance}\n"
             f"🏆 Ранг: {user.rank}")
 
