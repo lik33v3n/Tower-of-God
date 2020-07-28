@@ -72,7 +72,7 @@ async def gear_unequip_query(c: CallbackQuery, user: User):
     # user.weapon => Common Sword (example)
     if gear:
         user.inventory.append(gear.id)
-        await user.update(defence=user.defence - gear.defence_boost, 
+        await user.update(defence=user.defence - gear.defence_boost if user.defence - gear.defence_boost >= 0 else 0, 
                           max_defence=user.max_defence - gear.defence_boost,
                           damage=user.damage - gear.attack_boost, inventory=user.inventory).apply()
         await user.update(weapon=None).apply() if gear.item_class == 'weapon' else await user.update(armor=None).apply()
