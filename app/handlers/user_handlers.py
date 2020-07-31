@@ -9,7 +9,7 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 from ..database.base import Item, User
 from ..helpers.dev_text import gear_info_text, user_text
-from ..helpers.keyboards import (CONFIRM_Kb, EQUIP_Kb, EQUIPMENT_Kb,
+from ..helpers.keyboards import (CONFIRM_Kb, INVENTORY_ITEM_Kb, EQUIPMENT_Kb,
                                  HEAL_CONFIRM_Kb, HEAL_PURCHASE_Kb, HEALING_Kb,
                                  HEALING_STATE_Kb, IDLE_Kb, INVENTORY_Kb,
                                  PROFILE_Kb, UPDATE_STATS_Kb)
@@ -53,7 +53,7 @@ async def user_inventory(m: Message, user: User):
 async def user_inventory_items(c: CallbackQuery):
     gear = await Item.get(int(c.data[4:]))
     if gear:
-        await c.message.edit_text(text=gear_info_text(gear), reply_markup=EQUIP_Kb(gear.id))
+        await c.message.edit_text(text=gear_info_text(gear), reply_markup=INVENTORY_ITEM_Kb(gear.id))
     else:
         with suppress(MessageToDeleteNotFound):
             await c.message.delete()
@@ -71,7 +71,7 @@ async def user_healing_options(m: Message):
 
 
 async def user_healing(m: Message):
-    await m.answer(what_is_healing, reply_markup=CONFIRM_Kb(text='💊 Да', callback='enter_healing'))
+    await m.answer(what_is_healing, reply_markup=CONFIRM_Kb(text=('💊 Да', '🔚 Закрыть'), callback='enter_healing'))
 
 
 async def user_heal_scheduler(user: User, call: CallbackQuery, state: FSMContext):

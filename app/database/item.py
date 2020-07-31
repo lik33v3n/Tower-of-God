@@ -13,4 +13,3 @@ class Item(db.Model):
     rank = db.Column(db.String, nullable=False, comment='Ранг для получения')
     quality = db.Column(db.String, nullable=False, comment='Качество')
     item_class = db.Column(db.String, nullable=False, comment='Оружие или броня')
-    price = db.Column(db.Integer, nullable=False, default='1', comment='Стоимость предмета')

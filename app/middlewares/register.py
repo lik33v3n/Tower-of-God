@@ -14,7 +14,7 @@ class RegisterMiddleware(BaseMiddleware):
         user = await User.get(base_user.id)
         if user is None: 
             with suppress(BotBlocked):
-                user = await User.create(id=base_user.id)
+                user = await User.create(id=base_user.id, username=base_user.first_name)
                 logging.info(f"New user: {base_user.id}, {base_user.first_name}.")
 
         data["user"] = user

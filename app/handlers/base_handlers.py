@@ -13,7 +13,7 @@ from aiogram.utils.exceptions import (CantParseEntities, MessageNotModified,
 from ..database.db import db
 from ..database.user import User
 from ..handlers.user_handlers import user_profile
-from ..helpers.keyboards import CONFIRM_Kb, FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
+from ..helpers.keyboards import FUNC_LIST_Kb, HELP_Kb, IDLE_Kb
 from ..helpers.scenario import func_description, greetings, help_text
 from ..utils.states import AdminStates
 
@@ -117,8 +117,7 @@ async def back(c: CallbackQuery, state: FSMContext):
     with suppress(MessageToDeleteNotFound):
         await c.message.delete()
     await state.reset_state()
-    async with state.proxy() as data:
-        data['enemy'] = {}
+    await state.reset_data()
     await c.message.answer('Главное меню <b>“Tower of God”</b>.', reply_markup=IDLE_Kb())
 
 

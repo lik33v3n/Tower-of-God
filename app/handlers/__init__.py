@@ -32,9 +32,14 @@ def setup(dp: Dispatcher):
     dp.register_callback_query_handler(pve_defence, lambda c: True and c.data == 'defence_mob', state='*')
     dp.register_message_handler(pve_leave_battle, lambda m: m.text and m.text == '⛔️ Сдаться', state=MainStates.battle)
     # Battle handlers. ^^^
-    dp.register_message_handler(shop_func, lambda m: m.text and m.text == '🛒 Магазин')
-    dp.register_message_handler(shop_query, lambda m: m.text and m.text in ('🏹 Buy armor', '🥋 Buy weapon', '🧪 Buy potion'), 
-                                                                            state=MainStates.shopping)
+    dp.register_message_handler(shop_all, lambda m: m.text and m.text == '🛒 Торговая площадка')
+    dp.register_callback_query_handler(shop_query_my, lambda c: True and c.data == 'shop_my', state=MainStates.shopping)
+    dp.register_callback_query_handler(shop_query_refresh, lambda c: True and c.data[:12] == 'shop_refresh', state=MainStates.shopping)
+    dp.register_callback_query_handler(shop_query_get, lambda c: True and c.data[:9] == 'shop_get_', state=MainStates.shopping)
+    dp.register_callback_query_handler(shop_query_delete, lambda c: True and c.data[:16] == 'shop_lot_delete_', state=MainStates.shopping)
+    dp.register_callback_query_handler(shop_query_buy, lambda c: True and c.data[:13] == 'shop_lot_buy_', state=MainStates.shopping)
+    dp.register_callback_query_handler(shop_query_scroll, lambda c: True and c.data[:5] == 'shop_', state=MainStates.shopping)
+    
     dp.register_callback_query_handler(buy_heal_potion, lambda c: True and c.data == 'buy_heal_potion')
     # Game handlers. ^^^
     dp.register_message_handler(gear_info_check, lambda m: m.text and m.text.startswith('/'))
@@ -43,6 +48,9 @@ def setup(dp: Dispatcher):
     dp.register_callback_query_handler(gear_unequip_query, lambda c: True and c.data[:8] == 'unequip_' and c.data[8:] != 'empty')
     dp.register_message_handler(gear_craft, lambda m: m.text and m.text == '⚒ Крафт')
     dp.register_callback_query_handler(gear_craft_query, lambda c: True and c.data[:6] == 'craft_')
+    dp.register_callback_query_handler(gear_sell_register, lambda c: True and c.data[:14] == 'sell_register_')
+    dp.register_callback_query_handler(gear_sell_confirm, lambda c: True and c.data[:5] == 'sell_')
+    dp.register_message_handler(gear_sell_registered, lambda m: m.text, state=MainStates.selling)
     # Gear handlers. ^^^
     dp.register_message_handler(user_profile, lambda m: m.text and m.text == '👤 Профиль')
     dp.register_message_handler(user_inventory, lambda m: m.text and m.text == '💼 Инвентарь')

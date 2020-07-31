@@ -1,13 +1,18 @@
 import logging
 from contextlib import suppress
 
-from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import MessageToDeleteNotFound
+from aiogram.dispatcher import FSMContext
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.utils.exceptions import MessageToDeleteNotFound, MessageToEditNotFound
 
-from ..database.base import User, Item
+from app.__main__ import bot
+
+from ..database.base import Item, Shop, User
 from ..handlers.user_handlers import user_inventory
 from ..helpers.dev_text import gear_info_text
-from ..helpers.keyboards import CRAFT_Kb, EQUIPMENT_Kb, IDLE_Kb, UNDRESS_Kb
+from ..helpers.keyboards import (CONFIRM_Kb, CRAFT_Kb, EQUIPMENT_Kb, IDLE_Kb,
+                                 UNDRESS_Kb)
+from ..utils.states import MainStates
 
 
 async def gear_info_check(m: Message):
@@ -134,3 +139,53 @@ async def gear_craft_query(c: CallbackQuery, user: User):
             await c.message.delete()
         await c.message.answer('<b>Error:</b> Broken item (Свяжитесь с администрацией)', reply_markup=IDLE_Kb())
         raise NameError("Broken item")
+
+
+async def gear_sell_confirm(c: CallbackQuery, user: User):
+    await c.message.edit_text(f'💸 <b>Продажа предмета.</b>\n\n<i>  - Продажа предмета осуществляется между игроками, без участия администрации. Советуем ставить разумную цену\n\n'
+                              f'  - Продавая предмет вы не получите прибыль <u>моментально</u>! Вы лишь регистрируете его \"в очередь\" где другие пользователи могут купить его. </i>',
+                              reply_markup=CONFIRM_Kb(text=('💸 Продолжить', '🔚 Отменить'), callback=f'sell_register_{c.data[5:]}'))
+
+
+
+async def gear_sell_register(c: CallbackQuery, user: User, state: FSMContext):
+    item = await Item.get(int(c.data[14:]))
+    if item: 
+        await MainStates.selling.set()
+        with suppress(MessageToDeleteNotFound):
+            await c.message.delete()
+        trash = await c.message.answer('❔ <b>Как зарегистрировать предмет:</b>\n\n<i>  - На данном этапе всё просто ведь Башня делает почти всё за вас, '
+                                       'вам же нужно отправить боту <u>стоимость</u> предмета</i>. \n\nПример: '
+                                       '\"999\"', reply_markup=ReplyKeyboardRemove())
+        async with state.proxy() as data:
+            data['sell_item'] = item
+            data['trash'] = trash
+    else:
+        with suppress(MessageToDeleteNotFound):
+            await c.message.delete()
+        await c.message.answer('<b>Error:</b> Broken item (Свяжитесь с администрацией)', reply_markup=IDLE_Kb())
+        raise NameError("Broken item")
+
+
+async def gear_sell_registered(m: Message, user: User, state: FSMContext):
+    async with state.proxy() as data:
+        item = data['sell_item']
+        trash = data['trash']
+    try:
+        request = await Shop.create(item_id=item.id, item=item.name, rank=item.rank, price=int(m.text), user_id=user.id)
+        # removing from the inventory
+        user.inventory.remove(request.item_id)
+        await m.delete()
+        with suppress(MessageToDeleteNotFound):
+            await trash.delete()
+            await m.answer(text=f'❕ Лот №{request.id} на продажу создан:\n\n{request.item}: /{request.item_id}\n'
+                                f'🏆 Ранг предмета: {request.rank}\n💸 Цена: {request.price}', reply_markup=IDLE_Kb())
+        await user.update(inventory=user.inventory).apply()
+    except (ValueError):
+        await m.delete()
+        with suppress(MessageToDeleteNotFound):
+            await trash.delete()
+            await m.answer(text='❗️ Вы не ввели число.', reply_markup=IDLE_Kb())
+    finally:
+        await state.reset_data()
+        await state.reset_state()

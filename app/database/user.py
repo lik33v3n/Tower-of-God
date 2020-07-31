@@ -8,6 +8,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, index=True, unique=True, comment='Уникальный ID')
+    username = db.Column(db.String, nullable=False, default='noname', comment='Имя')
     rank = db.Column(db.String(1), nullable=False, default='-', comment='Ранг')
     lvl = db.Column(db.Integer, nullable=False, default=1, comment='Уровень')
     xp = db.Column(db.Integer, nullable=False, default=0, comment='Опыт')
