@@ -22,4 +22,4 @@ class User(db.Model):
     level_points = db.Column(db.Integer, nullable=False, default=0, comment='Очки повышения')
     inventory = db.Column(ARRAY(db.Integer), nullable=False, default=[], comment='Инвентарь')
     balance = db.Column(db.Integer, nullable=False, default=0, comment='Баланс')
-    heal_potions = db.Column(db.Integer, nullable=False, default=3, comment='Лечебное зелье')
+    heal_potions = db.Column(db.Integer, nullable=False, default=1, comment='Лечебное зелье')

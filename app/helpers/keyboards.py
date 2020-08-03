@@ -97,6 +97,14 @@ def ATTACK_Kb():
     return attack_keyboard
 
 
+def BATTLE_MENU_Kb(first_text, first_callback):
+    kb = InlineKeyboardMarkup(row_width=1)
+    kb.add(InlineKeyboardButton(text=first_text, callback_data=first_callback)).add(
+           InlineKeyboardButton(text="⚗️ Бафы", callback_data="buffs_menu")).add(
+           InlineKeyboardButton(text="🎲 Способности", callback_data="abilities_menu"))
+    return kb
+
+
 def DEFENCE_Kb():
     defence_keyboard = InlineKeyboardMarkup(row_width=1)
     btn1 = InlineKeyboardButton(text="Голова", callback_data="defence_mob")

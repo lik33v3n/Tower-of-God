@@ -21,11 +21,9 @@ class RegisterMiddleware(BaseMiddleware):
 
     async def on_pre_process_message(self, m: types.Message, data: dict):
         await self.return_user(data, m.from_user)
-        print(f"[M] \"{m.text}\"  -  {m.from_user.id} | {m.from_user.first_name}")
         if m.text == '~':
             with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
                 await m.delete()
 
     async def on_pre_process_callback_query(self, c: types.CallbackQuery, data: dict):
         await self.return_user(data, c.from_user)
-        print(f"[Q] \"{c.data}\"  -  {c.from_user.id} | {c.from_user.first_name}")

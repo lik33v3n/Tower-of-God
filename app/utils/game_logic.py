@@ -3,14 +3,6 @@ import json
 import math
 
 
-AVAILABLE_COMMANDS = ("👤 Профиль", "⚔️ Бой", "💉 Лечение", "🧪 Лечебные зелья", "📯 Повышение ранга",
-                      "💊 Лазарет", "💼 Инвентарь", "📤 Снять экипировку", "🥋 Экипировка",
-                      "⚖️ Повышение характеристик", "⚒ Крафт", "🔈 Помощь",
-                      "🛒 Торговая площадка", '/help')
-
-ADMIN_COMMANDS = ('lambda', 'info', 'log', 'get', 'deluser')
-
-
 async def battle_attack(x, y, u, e, call):
     text = f"❕ Ты попал по \"{e.name}\"\n\nТы нанёс \"{e.name}\" {u.damage} урона.\n"
     if x == y:
@@ -101,12 +93,8 @@ def get_xp(lvl):
     """
     Returns total XP according to gain level
     """
-    if lvl != 1:
-        math = (((lvl - 1) * 10) ** 1.2) * lvl
-        total_xp = round(math / 10) * 10
-    else:
-        total_xp = 15
-    return total_xp
+    total_xp = int((lvl * 10) ** 1.1)
+    return total_xp * lvl
 
 
 # def json_inv(u):
@@ -146,13 +134,16 @@ def round_down(n, decimals=0):
 
 def enemy_calc(u_attack, u_health, u_defence, lvl):
     enemy, result = [], []
-    multiplier = round_down(random.uniform(0.6, 1.2), 1)
+    if lvl != 1:
+        multiplier = round_down(random.uniform(0.4, 1.1), 1) 
+    else:
+        multiplier = 0.4
     print(multiplier)
     for stat in (u_attack, u_health, u_defence):
         enemy.append(round(stat*multiplier) if stat != 0 else 0)
         
     e_power = enemy[0]*(enemy[1]+enemy[2])
-    formulae = int((e_power/random.randint(5,10))*(10+random.randint(lvl-1, lvl+2)+lvl)/(5+lvl)//(math.sqrt(lvl)))
+    formulae = int((e_power/(lvl**1.45))*2)
     result = [enemy, formulae if formulae > 1 else 2]
     
     return result

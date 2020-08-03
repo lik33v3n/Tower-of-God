@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections import deque
 from contextlib import suppress
@@ -6,10 +7,13 @@ from datetime import datetime
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, Update
 from aiogram.types.chat import ChatActions
+from aiogram.utils.exceptions import (BotBlocked, CantParseEntities,
+                                      ChatNotFound, MessageNotModified,
+                                      MessageToDeleteNotFound, RetryAfter,
+                                      TelegramAPIError, UserDeactivated)
 from aiogram.utils.markdown import quote_html
-from aiogram.utils.exceptions import (CantParseEntities, MessageNotModified,
-                                      MessageToDeleteNotFound)
 
+from ..__main__ import bot
 from ..database.db import db
 from ..database.user import User
 from ..handlers.user_handlers import user_profile
@@ -23,6 +27,43 @@ async def cmd_start(m: Message, user: User):
         await m.answer(greetings[i])
         await ChatActions().typing(sleep=1.5)
     await user_profile(m, user, False)
+
+
+async def send_message(user_id: int, text: str, disable_notification: bool = False) -> bool:
+    try:
+        await bot.send_message(user_id, text, disable_notification=disable_notification)
+    except BotBlocked:
+        logging.error(f"Target [ID:{user_id}]: blocked by user")
+    except ChatNotFound:
+        logging.error(f"Target [ID:{user_id}]: invalid user ID")
+    except RetryAfter as e:
+        logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
+        await asyncio.sleep(e.timeout)
+        return await send_message(user_id, text)  # Recursive call
+    except UserDeactivated:
+        logging.error(f"Target [ID:{user_id}]: user is deactivated")
+    except TelegramAPIError:
+        logging.exception(f"Target [ID:{user_id}]: failed")
+    else:
+        logging.info(f"Target [ID:{user_id}]: success")
+        return True
+    return False
+
+
+async def broadcaster(text: str, disable_notification: bool) -> int:
+    count = 0
+    user_list = await User.select('id').gino.all()
+    user_count = await db.func.count(User.id).gino.scalar() # pylint: disable=no-member
+    try:
+        for user_id in user_list:
+            if await send_message(user_id=user_id[0], text=text, disable_notification=disable_notification):
+                count += 1
+            await asyncio.sleep(.05)  # 20 messages per second (Limit: 30 messages per second)
+    finally:
+        logging.info(f"{count} messages successful sent.")
+
+    return count, user_count
+
 
 
 async def help_func(m: Message):
@@ -45,9 +86,7 @@ async def help_query(c: CallbackQuery):
 
 
 async def admin_commands(m: Message):
-    if m.text == '!lambda':
-        await m.reply('Available commands:\n <b>!get</b> \'column\' \'value\'\n <b>!log</b> \'rows\'')
-    elif m.text == '!info':
+    if m.text == '!info':
         count = await db.func.count(User.id).gino.scalar() # pylint: disable=no-member
         time = datetime.now().strftime('|%d.%m.%y - %H:%M|')
         await m.reply(f"<b>Server time:</b> {time}\n<b>User count:</b> {count}")
@@ -72,11 +111,18 @@ async def admin_commands(m: Message):
         elif m.text == '!get':
             await AdminStates.getuser.set()
             await m.reply("Перешли любое сообщение от юзера.")
-
     elif '!deluser' in m.text:
         if m.text == '!deluser':
             await AdminStates.deluser.set()
             await m.reply("Перешли любое сообщение от юзера.")
+    elif '!reload' == m.text:
+        count, user_count = await broadcaster(text='❗ Бот будет перезагружен через через (1) минуту. <i>Рекомендуется покинуть бой/торговую площадку/лазарет</i>.', disable_notification=False)
+        await m.reply(f'❕ Ваше сообщение получили {count}/{user_count} пользователя/ей.')    
+    elif m.text[:10] == '!broadcast' or m.text[:11] == '!sbroadcast':
+        text = m.text.split(' ', 1)
+        count, user_count = await broadcaster(text=text[1], disable_notification=False if text[0] == '!broadcast' else True)
+        await m.reply(f'❕ Ваше сообщение получили {count}/{user_count} пользователя/ей.')
+
 
 
 async def admin_get_handler(m: Message, state: FSMContext):

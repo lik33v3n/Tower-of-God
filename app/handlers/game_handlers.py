@@ -21,10 +21,13 @@ MY_LOTS = '~  ~  ~ 👤  <b>Мои лоты на продажу</b>:  ~  ~  ~'
 async def buy_heal_potion(c: CallbackQuery, user: User):
     if user.balance - (user.lvl * 10) // 4 >= 0:
         await user.update(heal_potions=user.heal_potions+1, balance=user.balance - (user.lvl * 10) // 4).apply()
-        await c.message.edit_text(
-            f'❕ Вы преобрели 1 лечебное зельё, с вашего баланса списано {(user.lvl * 10) // 4} монет.')
+        with suppress(MessageToDeleteNotFound):
+            await c.message.delete()
+        await c.message.answer(f'❕ Вы преобрели 1 лечебное зельё, с вашего баланса списано {(user.lvl * 10) // 4} монет.', reply_markup=IDLE_Kb())
     else:
-        await c.message.edit_text('❗ У вас недостаточно монет')
+        with suppress(MessageToDeleteNotFound):
+            await c.message.delete()
+        await c.message.answer('❗ У вас недостаточно монет', reply_markup=IDLE_Kb())
 
 
 async def shop_all(m: Message, state: FSMContext, user: User, enter=True):
@@ -128,8 +131,9 @@ async def shop_query_buy(c: CallbackQuery, state: FSMContext, user: User):
                 user.inventory.append(lot.item_id)
                 user.balance = user.balance-lot.price
                 await user.update(inventory=user.inventory, balance=user.balance).apply()
-
-                await c.message.answer(f'📦 Лот №{lot.id} был успешно продан.\n\n<b>{lot.item}</b>: />{lot.item_id}\n🏆 Ранг предмета: {lot.rank}\n'
+                with suppress(MessageToDeleteNotFound):
+                        await c.message.delete()
+                await c.message.answer(f'📦 Лот №{lot.id} был успешно продан.\n\n<b>{lot.item}</b>: /{lot.item_id}\n🏆 Ранг предмета: {lot.rank}\n'
                                        f'👤 Покупатель: <a href="tg://user?id={user.id}">{user.username}</a>\n👤 Продавец: <a href="tg://user?id={receiver.id}">{receiver.username}</a>\n'
                                        f'🕓 Тайм код: {time}\n💸 С вашего счета списано <b>-{lot.price}</b>.\n\n<i>В случае любых несостыковок это сообщение считается за доказательство</i>')
                 await state.reset_data()

@@ -32,7 +32,7 @@ async def user_profile(m: Message, user: User, clean=True):
                 boost.extend([0, 0])
     else:
         boost = None
-    await m.answer(text=user_text(user, m.from_user.first_name, boost, equipment),
+    await m.answer(text=user_text(user, user.username, boost, equipment),
                    reply_markup=PROFILE_Kb() if clean is True else IDLE_Kb())
 
 
@@ -155,19 +155,28 @@ async def user_stats_increase(m: Message, user: User):
     if user.level_points > 0:
         await m.answer(text="Какую характеристику повышать?", reply_markup=UPDATE_STATS_Kb())
     else:
-        await m.answer('❗ У тебя нету очков повышения!')
+        await m.answer('❗ У тебя нету очков повышения!', reply_markup=IDLE_Kb())
 
 
 async def user_stats_increase_query(c: CallbackQuery, user: User):
+    weapon = await Item.get(user.weapon)
+    armor = await Item.get(user.armor)
+    attack_boost = (weapon.attack_boost if weapon else 0) + (armor.attack_boost if armor else 0)
     if user.level_points > 0:
         if c.data[13:] == 'damage':
-            await user.update(damage=user.damage+1, level_points=user.level_points-1).apply()
-            await c.answer('❕ Урон увеличен.', show_alert=True)
+            if (user.damage-attack_boost) * 3 <= user.max_health + user.max_defence:
+                await user.update(damage=user.damage+1, level_points=user.level_points-1).apply()
+                await c.answer(f'❕ Урон увеличен: {user.damage-1}->{user.damage}', show_alert=True)
+            else:
+                await c.answer('❗ В целях сохранения баланса, атака не должна превышать треть сумы здоровья и защиты.', show_alert=True)
         elif c.data[13:] == 'health':
             await user.update(max_health=user.max_health+1, health=user.health+1, level_points=user.level_points-1).apply()
-            await c.answer('❕ Здоровье увеличено', show_alert=True)
+            await c.answer(f'❕ Здоровье увеличено: {user.max_health-1}->{user.max_health}', show_alert=True)
         elif c.data[13:] == 'defence':
             await user.update(max_defence=user.max_defence+1, defence=user.defence+1, level_points=user.level_points-1).apply()
-            await c.answer('❕ Защита увеличена', show_alert=True)
+            await c.answer(f'❕ Защита увеличена: {user.max_defence-1}->{user.max_defence}', show_alert=True)
     else:
-        await c.message.edit_text(text='❗ Ты использовал все очки повышения')
+        with suppress(MessageToDeleteNotFound):
+            await c.message.delete()
+        await user_profile(c.message, user, False)
+        await c.answer(text='❗ Ты использовал все очки повышения')

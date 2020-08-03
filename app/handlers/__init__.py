@@ -4,13 +4,19 @@ from aiogram.dispatcher.dispatcher import Dispatcher
 from aiogram.dispatcher.filters import CommandHelp, CommandStart
 from aiogram.dispatcher.filters.builtin import Command, IDFilter
 
-from ..utils.game_logic import ADMIN_COMMANDS, AVAILABLE_COMMANDS
 from ..utils.states import MainStates, AdminStates
 from .base_handlers import *
 from .battle_handlers import *
 from .game_handlers import *
 from .gear_handlers import *
 from .user_handlers import *
+
+
+AVAILABLE_COMMANDS = ("👤 Профиль", "⚔️ Бой", "💉 Лечение", "🧪 Лечебные зелья", "📯 Повышение ранга",
+                      "💊 Лазарет", "💼 Инвентарь", "📤 Снять экипировку", "🥋 Экипировка",
+                      "⚖️ Повышение характеристик", "⚒ Крафт", "🔈 Помощь",
+                      "🛒 Торговая площадка", '/help')
+ADMIN_COMMANDS = ('lambda', 'info', 'log', 'get', 'deluser', 'broadcast', 'sbroadcast', 'reload')
 
 
 def setup(dp: Dispatcher):
