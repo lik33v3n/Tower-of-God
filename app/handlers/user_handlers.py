@@ -7,12 +7,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
-from ..database.base import Item, User
-from ..helpers.dev_text import gear_info_text, user_text
+from ..database.base import Item, User, Ability
+from ..helpers.dev_text import gear_info_text, user_text, ability_info_text
 from ..helpers.keyboards import (CONFIRM_Kb, INVENTORY_ITEM_Kb, EQUIPMENT_Kb,
                                  HEAL_CONFIRM_Kb, HEAL_PURCHASE_Kb, HEALING_Kb,
                                  HEALING_STATE_Kb, IDLE_Kb, INVENTORY_Kb,
-                                 PROFILE_Kb, UPDATE_STATS_Kb)
+                                 PROFILE_Kb, UPDATE_STATS_Kb, ABILITIES_Kb, ABILITIES_ITEM_Kb)
 from ..helpers.scenario import healing_text, what_is_healing
 from ..utils.scheduler import scheduler
 from ..utils.states import MainStates
@@ -36,7 +36,6 @@ async def user_profile(m: Message, user: User, clean=True):
                    reply_markup=PROFILE_Kb() if clean is True else IDLE_Kb())
 
 
-
 async def user_inventory(m: Message, user: User):
     if user.inventory:
         formatted = []
@@ -47,7 +46,6 @@ async def user_inventory(m: Message, user: User):
         await m.answer(text='🧳 Содержимое инвентаря:', reply_markup=INVENTORY_Kb(formatted))
     else:
         await m.answer(text='❗ Инвентарь пуст')
-    pass
 
 
 async def user_inventory_items(c: CallbackQuery):
@@ -180,3 +178,24 @@ async def user_stats_increase_query(c: CallbackQuery, user: User):
             await c.message.delete()
         await user_profile(c.message, user, False)
         await c.answer(text='❗ Ты использовал все очки повышения')
+
+
+async def user_abilities(m: Message, user: User, clear: bool = True):
+    if user.abilities:
+        abilities = [await Ability.get(x) for x in user.abilities if await Ability.get(x)]
+        if clear:
+            await m.answer(text='🎲  Доступные способности:', reply_markup=ABILITIES_Kb(abilities, False))
+        else:
+            await m.edit_text(text='🎲  Доступные способности:', reply_markup=ABILITIES_Kb(abilities, False))
+    else:
+        await m.answer(text='❗ У вас нету способностей', reply_markup=IDLE_Kb())
+
+
+async def user_abilities_query(c: CallbackQuery, user: User):
+    if c.data != 'ability_get_back':
+        is_clear = False if (c.data[:16] == 'ability_get_atk_' or c.data[:16] == 'ability_get_def_') else True
+        ability = await Ability.get(int(c.data[12:] if is_clear else c.data[16:]))
+        is_attack = True if c.data[12:15] == 'atk' else False
+        await c.message.edit_text(ability_info_text(ability), reply_markup=ABILITIES_ITEM_Kb(clear=is_clear, item=ability.id, attack=is_attack))
+    elif c.data == 'ability_get_back':
+        await user_abilities(c.message, user, False)
