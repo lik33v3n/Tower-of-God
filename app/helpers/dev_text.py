@@ -1,5 +1,4 @@
 from app.utils.game_logic import power, get_xp
-from .scenario import ABILITIES
 
 
 def user_text(user, username, boost, equipment):
@@ -47,12 +46,6 @@ def gear_info_text(gear):
             f"🏆 Ранг предмета: {gear.rank}\n"
             f"🎗 Назначение: {'Оружие' if gear.item_class == 'weapon' else 'Броня'}\n"
             f"💠 Качество: {gear.quality}")
-
-
-def ability_info_text(ability):
-    return (f"🎲 <b>{ability.name}</b>:\n\n"
-            f"❔ <i>\"{ABILITIES.get(ability.id)}\"</i>\n\n"
-            f"🏆 Ранг способности: {ability.rank}\n")
 
 
 def lvl_up_text(bonus, points):

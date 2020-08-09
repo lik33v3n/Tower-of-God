@@ -4,40 +4,48 @@ import math
 
 
 async def battle_attack(x, y, u, e, call):
+    text = f"❕ Ты попал по \"{e.name}\"\n\nТы нанёс \"{e.name}\" {u.damage} урона.\n"
     if x == y:
         await call.answer("❗ Противник увернулся от удара", show_alert=True)
         return e.health, e.defence
     else:
         if e.defence <= 0:
             e.health -= u.damage
+            await call.answer(text, show_alert=True)
             return e.health, e.defence
         else:
             if u.damage > e.defence:
                 miss_dmg = u.damage - e.defence
                 e.health -= miss_dmg
+                await call.answer(text, show_alert=True)
                 e.defence = 0
                 return e.health, e.defence
             else:
                 e.defence -= u.damage
+                await call.answer(text, show_alert=True)
                 return e.health, e.defence
 
 
 async def battle_defence(x, y, u, e, call):
+    text = f"❕ \"{e.name}\" попал по тебе\n\n\"{e.name}\" нанёс тебе {e.damage} урона.\n"
     if x == y:
         await call.answer("❗ Ты увернулся от удара", show_alert=True)
         return u.health, u.defence
     else:
         if u.defence <= 0:
             u.health -= e.damage
+            await call.answer(text, show_alert=True)
             return u.health, u.defence
         else:
             if e.damage > u.defence:
                 miss_dmg = e.damage - u.defence
                 u.health -= miss_dmg
+                await call.answer(f"{text}", show_alert=True)
                 u.defence = 0
                 return u.health, u.defence
             else:
                 u.defence -= e.damage
+                await call.answer(text, show_alert=True)
                 return u.health, u.defence
 
 

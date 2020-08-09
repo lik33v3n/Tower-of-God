@@ -7,11 +7,9 @@ from datetime import datetime
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, Update
 from aiogram.types.chat import ChatActions
-from aiogram.utils.exceptions import (BadRequest, BotBlocked,
-                                      CantParseEntities, ChatNotFound,
-                                      MessageNotModified,
-                                      MessageToDeleteNotFound,
-                                      MessageToReplyNotFound, RetryAfter,
+from aiogram.utils.exceptions import (BotBlocked, CantParseEntities,
+                                      ChatNotFound, MessageNotModified,
+                                      MessageToDeleteNotFound, RetryAfter,
                                       TelegramAPIError, UserDeactivated)
 from aiogram.utils.markdown import quote_html
 
@@ -41,7 +39,7 @@ async def send_message(user_id: int, text: str, disable_notification: bool = Fal
     except RetryAfter as e:
         logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
         await asyncio.sleep(e.timeout)
-        return await send_message(user_id, text)
+        return await send_message(user_id, text)  # Recursive call
     except UserDeactivated:
         logging.error(f"Target [ID:{user_id}]: user is deactivated")
     except TelegramAPIError:
@@ -174,6 +172,6 @@ async def errors_handler(update: Update, exception: Exception):
         raise exception
     except Exception as e:
         time = datetime.now().strftime('%d.%m.%y - %H:%M:%S')
-        with suppress(AttributeError, MessageToReplyNotFound, BadRequest):
+        with suppress(AttributeError):
             await update.message.reply(f'Произошла ошибка: <b>{e.__class__.__name__}</b>.\nTraceback: \"<i>{e}</i>\".'
                                        f'\nВремя ошибки: <b>{time}</b> \n<i>Cообщите администрации - @likeeven</i>')

@@ -89,48 +89,28 @@ def SHOP_LOT_Kb(lot):
 
 def ATTACK_Kb():
     attack_keyboard = InlineKeyboardMarkup(row_width=1)
-    btn1 = InlineKeyboardButton(text="◾ Голова", callback_data="attack_mob")
-    btn2 = InlineKeyboardButton(text="▫ Грудь", callback_data="attack_mob")
-    btn3 = InlineKeyboardButton(text="◾ Живот", callback_data="attack_mob")
-    btn4 = InlineKeyboardButton(text="▫ Ноги", callback_data="attack_mob")
+    btn1 = InlineKeyboardButton(text="Голова", callback_data="attack_mob")
+    btn2 = InlineKeyboardButton(text="Грудь", callback_data="attack_mob")
+    btn3 = InlineKeyboardButton(text="Живот", callback_data="attack_mob")
+    btn4 = InlineKeyboardButton(text="Ноги", callback_data="attack_mob")
     attack_keyboard.add(btn1, btn2, btn3, btn4)
     return attack_keyboard
 
 
-def BATTLE_MENU_Kb(first_text, first_callback, attack: bool):
+def BATTLE_MENU_Kb(first_text, first_callback):
     kb = InlineKeyboardMarkup(row_width=1)
     kb.add(InlineKeyboardButton(text=first_text, callback_data=first_callback)).add(
-           InlineKeyboardButton(text="🎲 Способности", callback_data=f"abilities_menu_{'atk' if attack else 'def'}"))
-    return kb
-
-
-def ABILITIES_Kb(abilities, battle: bool, attack: bool = True):
-    kb = InlineKeyboardMarkup(row_width=1)
-    for i in range(len(abilities)):
-        kb.add(InlineKeyboardButton(text=f'{abilities[i].name}:  \"{abilities[i].rank}\"', 
-                                    callback_data=f"ability_get_{('atk_' if attack else 'def_') if battle else ''}{abilities[i].id}"))
-    kb.add(InlineKeyboardButton(text="🔚 Закрыть", 
-                                callback_data=('attack_menu' if attack else 'defence_menu') if battle else 'back'))
-    return kb
-
-
-def ABILITIES_ITEM_Kb(clear=True, item=0, attack: bool = True):
-    kb = InlineKeyboardMarkup(row_width=1)
-    if clear:
-        kb.add(InlineKeyboardButton(text='🔙 Назад', callback_data='ability_get_back'))
-    else:
-        mode = 'atk' if attack else 'def'
-        kb.add(InlineKeyboardButton(text='🎲 Использовать', callback_data=f'battle_ability_{mode}_use_{item}')).add(
-               InlineKeyboardButton(text='🔙 Назад', callback_data=f"battle_ability_{mode}_back"))
+           InlineKeyboardButton(text="⚗️ Бафы", callback_data="buffs_menu")).add(
+           InlineKeyboardButton(text="🎲 Способности", callback_data="abilities_menu"))
     return kb
 
 
 def DEFENCE_Kb():
     defence_keyboard = InlineKeyboardMarkup(row_width=1)
-    btn1 = InlineKeyboardButton(text="▫ Голова", callback_data="defence_mob")
-    btn2 = InlineKeyboardButton(text="◾ Грудь", callback_data="defence_mob")
-    btn3 = InlineKeyboardButton(text="▫ Живот", callback_data="defence_mob")
-    btn4 = InlineKeyboardButton(text="◾ Ноги", callback_data="defence_mob")
+    btn1 = InlineKeyboardButton(text="Голова", callback_data="defence_mob")
+    btn2 = InlineKeyboardButton(text="Грудь", callback_data="defence_mob")
+    btn3 = InlineKeyboardButton(text="Живот", callback_data="defence_mob")
+    btn4 = InlineKeyboardButton(text="Ноги", callback_data="defence_mob")
     defence_keyboard.add(btn1, btn2, btn3, btn4)
     return defence_keyboard
 
