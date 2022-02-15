@@ -143,3 +143,5 @@ log.log
 config.py
 *.pyc
 alembic.ini
+log.log
+

@@ -168,7 +168,7 @@ async def pve_attack(c: CallbackQuery, state: FSMContext, user: User):
                                     await c.message.answer(f"❗ Вам выпал предмет: \n\"{dropped_item.name}\".\n"
                                                              f"<i>Предмет помещён в ваш инвентарь</i>")
                                 else:
-                                    c.message.answer('❗ Ёпрст, ваш ранг выше чем ранг существующего оружия.')
+                                    await c.message.answer('❗ Нима предметов.')
                     else:
                         with suppress(MessageCantBeEdited):
                             await data['msg'].edit_text('\n'.join(data['results']))

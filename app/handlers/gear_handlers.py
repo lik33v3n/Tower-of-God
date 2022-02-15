@@ -1,9 +1,11 @@
 import logging
 from contextlib import suppress
+from math import fabs
 
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from aiogram.utils.exceptions import MessageToDeleteNotFound, MessageToEditNotFound
+from aiogram.utils.exceptions import (MessageToDeleteNotFound,
+                                      MessageToEditNotFound)
 
 from app.__main__ import bot
 
@@ -134,6 +136,7 @@ async def gear_craft_query(c: CallbackQuery, user: User):
             with suppress(MessageToDeleteNotFound):
                 await c.message.delete()
             await c.message.answer('❗ Предметы уже максимального качества', reply_markup=IDLE_Kb())
+
     else:
         with suppress(MessageToDeleteNotFound):
             await c.message.delete()
@@ -172,7 +175,7 @@ async def gear_sell_registered(m: Message, user: User, state: FSMContext):
         item = data['sell_item']
         trash = data['trash']
     try:
-        request = await Shop.create(item_id=item.id, item=item.name, rank=item.rank, price=int(m.text), user_id=user.id)
+        request = await Shop.create(item_id=item.id, item=item.name, rank=item.rank, price=int(fabs(int(m.text))), user_id=user.id)
         # removing from the inventory
         user.inventory.remove(request.item_id)
         await m.delete()

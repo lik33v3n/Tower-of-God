@@ -6,8 +6,10 @@ from aiogram.dispatcher import Dispatcher
 
 from app import config
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO, 
-                    handlers=[logging.FileHandler(filename="log.log", encoding='utf8'), logging.StreamHandler()])
+logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', 
+                    level=logging.INFO, 
+                    handlers=[logging.FileHandler(filename="log.log", encoding='utf8'), 
+                            logging.StreamHandler()])
                     
 logging.getLogger("apscheduler").setLevel(logging.ERROR)
 logging.getLogger("gino.engine").setLevel(logging.ERROR)
